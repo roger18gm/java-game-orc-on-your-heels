@@ -1,33 +1,35 @@
 package io.github.roger18gm.java2dgame;
 
-import com.badlogic.gdx.ai.utils.Location;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.steer.SteeringAcceleration;
+import com.badlogic.gdx.ai.steer.SteeringBehavior;
+import com.badlogic.gdx.ai.steer.behaviors.Seek;
+import com.badlogic.gdx.ai.steer.behaviors.Wander;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
-public class Character implements Location<Vector2> {
-    protected Texture characterSheet;
+public class WanderEnemy {
+    private Texture characterSheet;
     private Animation<TextureRegion> animation;
     private float stateTime;
-    private int x, y;
     private int frameCols;
     private static final int FRAME_ROWS = 1;
     private String filePath;
-    protected boolean facingLeft = false;  // To track if the character is facing left
-    protected Body body;
-    private World world;
+    private boolean facingLeft = false;  // To track if the character is facing left
+    private final SteeringAgent enemyAgent;
+    private final SteeringAgent playerAgent;
+    private SteeringBehavior<Vector2> seekBehavior;
+    private SteeringAcceleration<Vector2> steeringOutput;
+    private final Body body;
 
-    private int lifePoints;
-
-    // Constructor
-    public Character(World world, String filepath, int x, int y, int frameCols, int lifePoints) {
+    public WanderEnemy(World world, int frameCols, String filepath, int x, int y, SteeringAgent playerAgent){
         this.frameCols = frameCols;
         this.filePath = filepath;
-        this.lifePoints = lifePoints;
         characterSheet = new Texture(Gdx.files.absolute(filepath));
         createAnimationFrames();
 
@@ -48,6 +50,55 @@ public class Character implements Location<Vector2> {
 
         body.createFixture(fixtureDef);
         shape.dispose();
+
+        this.enemyAgent = new SteeringAgent(body);
+        this.enemyAgent.setMaxLinearSpeed(1000f);
+        this.enemyAgent.setMaxLinearAcceleration(1000f);
+
+        this.playerAgent = playerAgent;
+        this.steeringOutput = new SteeringAcceleration<>(new Vector2());
+//        this.seekBehavior = new Seek<>(enemyAgent, playerAgent);
+        this.seekBehavior = new Wander<>(enemyAgent)
+            .setWanderRadius(50f)
+            .setWanderOffset(100f)
+            .setWanderRate(MathUtils.PI2 * 12f)
+            .setFaceEnabled(true);
+    }
+
+    public void update(float deltaTime) {
+        stateTime += deltaTime;
+//        System.out.println(playerAgent.getPosition());
+//        System.out.println("Wander Force: " + steeringOutput.linear);
+
+        seekBehavior.calculateSteering(steeringOutput);
+        applySteering(deltaTime);
+    }
+
+    private void applySteering(float deltaTime) {
+        if (steeringOutput == null) return;
+
+        Vector2 force = steeringOutput.linear.scl(50f);
+
+        if (!force.isZero()) {
+            body.applyForceToCenter(force, true);
+
+            Vector2 velocity = body.getLinearVelocity();
+            float maxSpeed = enemyAgent.getMaxLinearSpeed();
+            if (velocity.len2() > maxSpeed * maxSpeed) {
+                velocity.nor().scl(maxSpeed);
+                body.setLinearVelocity(velocity);
+            }
+        }
+
+//        Vector2 force = steeringOutput.linear.scl(deltaTime);
+//        body.applyForceToCenter(force, true);
+//        enemyAgent.getLinearVelocity().add(force);
+//        enemyAgent.getLinearVelocity().limit(enemyAgent.getMaxLinearSpeed());
+//        enemyAgent.getPosition().add(enemyAgent.getLinearVelocity().scl(deltaTime));
+    }
+
+    public void setSeekBehavior(SteeringBehavior<Vector2> behavior) {
+        this.seekBehavior = behavior;
     }
 
     // Creates the animation frames based on the texture and number of columns
@@ -63,19 +114,9 @@ public class Character implements Location<Vector2> {
                 animationFrames[index++] = tempFrames[i][j];
             }
         }
-        // **Change the frame duration for hurt animation specifically**
-        if (filePath.contains("Hurt")) {  // Check if it's the hurt animation
-            animation = new Animation<>(0.2f, animationFrames); // Slow down hurt animation to 0.2s per frame
-        } else {
-            animation = new Animation<>(0.1f, animationFrames); // Normal speed for other animations
-        }
-//        animation = new Animation<>(0.1f, animationFrames); // Create the animation with frame time of 0.1f
-        stateTime = 0f; // Reset state time for animation
-    }
 
-    // Update the state time (should be called every frame)
-    public void update(float deltaTime) {
-        stateTime += deltaTime;
+        animation = new Animation<>(0.1f, animationFrames); // Create the animation with frame time of 0.1f
+        stateTime = 0f; // Reset state time for animation
     }
 
     // Render the current frame of the animation
@@ -87,9 +128,14 @@ public class Character implements Location<Vector2> {
             currentFrame.flip(true, false);  // Flip horizontally
         }
 
-        batch.draw(currentFrame, body.getPosition().x - currentFrame.getRegionWidth() - 10 , body.getPosition().y - currentFrame.getRegionHeight() - 10, 220, 220); // Draw the current frame of the character
-//        batch.draw(currentFrame, body.getPosition().x - currentFrame.getRegionWidth() , body.getPosition().y - currentFrame.getRegionHeight() , 200, 200); // Draw the current frame of the character
-//        batch.draw(currentFrame, x, y, 200, 200); // Draw the current frame of the character
+//        float PPM = 100f; // Pixels per meter
+        float PPM = 1f; // Pixels per meter
+        Vector2 pos = body.getPosition();
+
+        batch.draw(currentFrame,
+            pos.x * PPM - 110,
+            pos.y * PPM - 110,
+            220, 220);
 
         // Reset flip to avoid affecting other frames
         if (facingLeft) {
@@ -97,41 +143,9 @@ public class Character implements Location<Vector2> {
         }
     }
 
-    public int getLifePoints(){
-        return this.lifePoints;
-    }
-    public void setLifePoints(int lifePoints) {
-        this.lifePoints = lifePoints;
-    }
-    public Body getBody() {
-        return body;
-    }
-
     // Dispose the character sheet (texture) to free resources
     public void dispose() {
         characterSheet.dispose();
-    }
-
-    // Getter and Setter for position
-    public int GetX() {
-        return x;
-    }
-
-    public void SetX(int x) {
-        this.x = x;
-    }
-
-    public int GetY() {
-        return y;
-    }
-
-    public void SetY(int y) {
-        this.y = y;
-    }
-
-    // Getter and Setter for the file path (also reloads texture and animation frames)
-    public String GetFilePath() {
-        return this.filePath;
     }
 
     public void SetFilePath(String filePath, int frameCols) {
@@ -158,38 +172,7 @@ public class Character implements Location<Vector2> {
         this.facingLeft = facingLeft;
     }
 
-
-    // Implement the Location interface methods
-    @Override
-    public Vector2 getPosition() {
-        return body.getPosition();
-    }
-
-    @Override
-    public float getOrientation() {
-        return body.getAngle();
-    }
-
-    @Override
-    public void setOrientation(float orientation) {
-        body.setTransform(body.getPosition(), orientation);
-    }
-
-    @Override
-    public Location<Vector2> newLocation() {
-        return new Character(world, filePath, x, y, frameCols, lifePoints);
-    }
-
-    @Override
-    public float vectorToAngle(Vector2 vector) {
-        return (float) Math.atan2(-vector.x, vector.y);
-    }
-
-    @Override
-    public Vector2 angleToVector(Vector2 outVector, float angle) {
-        outVector.x = -(float) Math.sin(angle);
-        outVector.y = (float) Math.cos(angle);
-        return outVector;
+    public Body getBody() {
+        return body;
     }
 }
-
