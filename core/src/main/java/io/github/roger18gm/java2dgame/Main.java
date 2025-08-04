@@ -154,7 +154,7 @@ public class Main extends ApplicationAdapter {
 
         random = new Random();
         // Create an enemy character
-        for (int e=0; e < random.nextInt(10); e++) {
+        for (int e=0; e < random.nextInt(50); e++) {
             wanderEnemies.add(new WanderEnemy(world, 6, "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Idle.png", random.nextInt(950), random.nextInt(700), playerAgent));
         }
 
@@ -188,6 +188,10 @@ public class Main extends ApplicationAdapter {
 
         } else {
             float deltaTime = Gdx.graphics.getDeltaTime();
+            // Call MovePerson's Move() method to update the character's position
+            movePerson.update(deltaTime);
+            npc.update(deltaTime);
+            enemy.update(deltaTime);
 
 //            // Collision detection: Check for player pickup
 //            Iterator<HealthItem> iterator = healthItems.iterator();
@@ -235,17 +239,12 @@ public class Main extends ApplicationAdapter {
                 } else if (!movePerson.isAttacking()) {
                     attackSoundPlayed = false; // Reset so sound can play on the next attack
                 }
-                if (enemy.attack && !attackSoundPlayed) {
-                    attackSoundTwo.play(1.0f); // Play sound only once per click
-                    attackSoundPlayed = true; // Because the soldier has attacked once it won't repeat the sound
-                } else if (!enemy.attack) {
-                    attackSoundPlayed = false; // Reset so sound can play on the next attack
-                }
-
-                // Call MovePerson's Move() method to update the character's position
-                movePerson.update(deltaTime);
-                npc.update(deltaTime);
-                enemy.update(deltaTime);
+//                if (enemy.attack && !attackSoundPlayed) {
+//                    attackSoundTwo.play(1.0f); // Play sound only once per click
+//                    attackSoundPlayed = true; // Because the soldier has attacked once it won't repeat the sound
+//                } else if (!enemy.attack) {
+//                    attackSoundPlayed = false; // Reset so sound can play on the next attack
+//                }
 
                 for (WanderEnemy e: wanderEnemies) {
                     e.update(deltaTime);
@@ -260,7 +259,7 @@ public class Main extends ApplicationAdapter {
 
                 // Update spawn timer and spawn hearts periodically
                 spawnTimer += deltaTime;
-                if (spawnTimer > 5 && healthItems.size() < 5) { // Spawn a new heart every 5 seconds
+                if (spawnTimer > 5) { // Spawn a new heart every 5 seconds
                     healthItems.add(HeartSpawner.createRandomHeart(heartTexture, Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
                     spawnTimer = 0; // Reset spawn timer
                 }
