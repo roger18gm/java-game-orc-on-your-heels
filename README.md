@@ -31,3 +31,17 @@ Useful Gradle tasks and flags:
 
 Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
 For example, `core:clean` removes `build` folder only from the `core` project.
+<<<<<<< Updated upstream
+=======
+
+## Useful websites
+The majority of our studies came from the documentation directly from the libgdx website. In addition, there were many youtube tutorials online. 
+[LibGDX documentation](https://libgdx.com/dev/)
+[Youtube Tutorials](https://www.youtube.com)
+
+## Future plans
+We plan to continue working on this projects and turn it into a fully functioning game. This includes adding adding aspects of "hurt" and creating the ability to pick up items to win the game. 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
