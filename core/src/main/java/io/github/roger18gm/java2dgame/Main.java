@@ -3,6 +3,8 @@ package io.github.roger18gm.java2dgame;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ScreenUtils;
 import items.Inventory;
@@ -30,6 +32,7 @@ public class Main extends ApplicationAdapter {
     private Texture flagTexture; // Flag texture
     private FlagItem flag; // The single flag item
     private Rectangle dropZone; // Drop zone for flag
+    private World world;
 
     private float spawnTimer; // Timer for heart spawning
 
@@ -37,12 +40,13 @@ public class Main extends ApplicationAdapter {
     public void create() {
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer(); // Initialize ShapeRenderer
+        World world = new World(new Vector2(0, 0), true); // No gravity, allow sleeping
 
         // Initialize player character
-        soldier = new Character("C:\\Users\\austi\\IdeaProjects\\java-game\\assets\\characters\\Characters(100x100)\\Soldier\\Soldier\\Soldier-Walk.png", 100, 50, 6);
+        soldier = new Character(world, "C:\\Users\\austi\\IdeaProjects\\java-game\\assets\\characters\\Characters(100x100)\\Soldier\\Soldier\\Soldier-Walk.png", 100, 50, 6, 100);
 
         // Initialize background
-        background = new Background();
+        background = new Background(world);
 
         // Initialize inventory system
         Skin skin = new Skin(Gdx.files.internal("C:\\Users\\austi\\IdeaProjects\\java-game\\assets\\ui\\uiskin.json"));
@@ -150,7 +154,7 @@ public class Main extends ApplicationAdapter {
         // Update game elements only when not paused
         if (!isPaused) {
             movePerson.update(deltaTime);
-            background.update(deltaTime);
+            //background.update(deltaTime);
             playerBox.setPosition(playerBox.x + 1, playerBox.y); // Example movement
         }
 
@@ -173,6 +177,7 @@ public class Main extends ApplicationAdapter {
         inventory.dispose();
         heartTexture.dispose();
         flagTexture.dispose();
+        world.dispose();
 
         // Dispose health item textures
         for (HealthItem heart : healthItems) {

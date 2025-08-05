@@ -33,6 +33,7 @@ public class MovePerson  implements InputProcessor {
 
     public MovePerson(Character character) {
         this.character = character;
+        this.lifePoints = character.getLifePoints();
 //        this.x = character.GetX();
 //        this.y = character.GetY();
     }
