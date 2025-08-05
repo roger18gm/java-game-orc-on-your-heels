@@ -15,18 +15,21 @@ public class MovePerson  implements InputProcessor {
     protected boolean movingRight = false;
     protected boolean movingUp = false;
     protected boolean movingDown = false;
-    private boolean attack = false;
+    public boolean attack = false;
 
     protected final int SPEED = 60;
     private static final String WALKING_PATH = "characters\\Characters(100x100)\\Soldier\\Soldier\\Soldier-Walk.png";
     private static final String IDLE_PATH = "characters\\Characters(100x100)\\Soldier\\Soldier\\Soldier-Idle.png";
     private static final String ATTACK_PATH = "characters\\Characters(100x100)\\Soldier\\Soldier\\Soldier-Attack02.png";
     private static final String HURT_PATH = "characters\\Characters(100x100)\\Soldier\\Soldier\\Soldier-Hurt.png";
+    private static final String DEATH_PATH = "characters\\Characters(100x100)\\Soldier\\Soldier\\Soldier-Death.png";
 
     public boolean damage = false; // Damage
     public Enemy enemy;
 
     public boolean faceLeft = false;
+
+    protected int lifePoints;
 
     public MovePerson(Character character) {
         this.character = character;
@@ -40,6 +43,15 @@ public class MovePerson  implements InputProcessor {
     public float GetY() {
         return character.getBody().getPosition().y;
     }
+
+    public int GetLife() {
+        return lifePoints;
+    }
+
+    public void setLifePoints() {
+        lifePoints = lifePoints - 1;
+    }
+
 
     // Called when a key is pressed
     @Override
@@ -111,9 +123,10 @@ public class MovePerson  implements InputProcessor {
         character.getBody().setLinearVelocity(velocity);
 
         // If the character is taking damage, the hurt animation will play
-        if (damage) {
+        if (damage && character.getLifePoints() != 0) {
             // Set hurt animation immediately
             character.SetFilePath(HURT_PATH, 4);
+            setLifePoints();
         } else {
             // Update the character's movement and animations as normal
             if (movingDown || movingUp || movingLeft || movingRight) {
@@ -124,6 +137,11 @@ public class MovePerson  implements InputProcessor {
                 character.SetFilePath(IDLE_PATH, 6); // Idle animation
             }
         }
+
+        if (character.getLifePoints() == 0) {
+            character.SetFilePath(DEATH_PATH, 4);
+        }
+
         character.update(deltaTime);
     }
 

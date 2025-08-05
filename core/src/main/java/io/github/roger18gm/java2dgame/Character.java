@@ -21,10 +21,13 @@ public class Character implements Location<Vector2> {
     protected Body body;
     private World world;
 
+    private int lifePoints;
+
     // Constructor
-    public Character(World world, String filepath, int x, int y, int frameCols) {
+    public Character(World world, String filepath, int x, int y, int frameCols, int lifePoints) {
         this.frameCols = frameCols;
         this.filePath = filepath;
+        this.lifePoints = lifePoints;
         characterSheet = new Texture(Gdx.files.absolute(filepath));
         createAnimationFrames();
 
@@ -94,6 +97,12 @@ public class Character implements Location<Vector2> {
         }
     }
 
+    public int getLifePoints(){
+        return this.lifePoints;
+    }
+    public void setLifePoints(int lifePoints) {
+        this.lifePoints = lifePoints;
+    }
     public Body getBody() {
         return body;
     }
@@ -168,7 +177,7 @@ public class Character implements Location<Vector2> {
 
     @Override
     public Location<Vector2> newLocation() {
-        return new Character(world, filePath, x, y, frameCols);
+        return new Character(world, filePath, x, y, frameCols, lifePoints);
     }
 
     @Override

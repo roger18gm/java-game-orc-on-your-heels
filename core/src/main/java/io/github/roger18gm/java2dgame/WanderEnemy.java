@@ -68,7 +68,7 @@ public class WanderEnemy {
     public void update(float deltaTime) {
         stateTime += deltaTime;
 //        System.out.println(playerAgent.getPosition());
-        System.out.println("Wander Force: " + steeringOutput.linear);
+//        System.out.println("Wander Force: " + steeringOutput.linear);
 
         seekBehavior.calculateSteering(steeringOutput);
         applySteering(deltaTime);

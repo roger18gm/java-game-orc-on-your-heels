@@ -17,9 +17,10 @@ public class Enemy implements InputProcessor{
     private static final String WALKING_PATH = "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Walk.png";
     private static final String IDLE_PATH = "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Idle.png";
     private static final String ATTACK_PATH = "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Attack02.png";
-
+    private static final String HURT_PATH = "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Hurt.png";
+    public boolean damage = false; // Damage
     public MovePerson movePerson;
-
+    public boolean faceLeft = false;
 
     public Enemy(Character character) {
         this.character = character;
@@ -101,15 +102,19 @@ public class Enemy implements InputProcessor{
 
         character.getBody().setLinearVelocity(velocity);
 
-        // Change images if moving
-        if (movingDown || movingUp || movingLeft || movingRight){
-            character.SetFilePath(WALKING_PATH, 8);
-        } else if (attack) {
-            character.SetFilePath(ATTACK_PATH, 6);
-        }
-        else
-        {
-            character.SetFilePath(IDLE_PATH, 6);
+        // If the character is taking damage, the hurt animation will play
+        if (damage) {
+            // Set hurt animation immediately
+            character.SetFilePath(HURT_PATH, 4);
+        } else {
+            // Update the character's movement and animations as normal
+            if (movingDown || movingUp || movingLeft || movingRight) {
+                character.SetFilePath(WALKING_PATH, 8); // Walking animation
+            } else if (attack) {
+                character.SetFilePath(ATTACK_PATH, 6); // Attack animation
+            } else {
+                character.SetFilePath(IDLE_PATH, 6); // Idle animation
+            }
         }
 
         character.update(deltaTime);

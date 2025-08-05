@@ -37,6 +37,7 @@ public class Main extends ApplicationAdapter {
     private Character orc;
     private Enemy enemy;
     private Sound sound;
+    private Sound attackSoundTwo;
     private Music music;
     // The default is that the soldier hasn't attacked yet
     private boolean attackSoundPlayed = false;
@@ -101,20 +102,21 @@ public class Main extends ApplicationAdapter {
         batch = new SpriteBatch();
 
         // Create MovePerson instance and pass the soldierWalking character to it
-        soldier = new Character(world, "characters\\Characters(100x100)\\Soldier\\Soldier\\Soldier-Walk.png", 100, 50, 6);
+        soldier = new Character(world, "characters\\Characters(100x100)\\Soldier\\Soldier\\Soldier-Walk.png", 100, 50, 6, 5);
         movePerson = new MovePerson(soldier);
 
         background = new Background(world);
 
-        orc = new Character(world, "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Idle.png", 200, 200, 6);
+        orc = new Character(world, "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Idle.png", 200, 200, 6, 5);
         enemy = new Enemy(orc);
 
 
-        npc = new NPC(world, "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Walk.png", 200, 200, 8, soldier);
+        npc = new NPC(world, "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Walk.png", 200, 200, 8, 5, soldier);
         moveNPC = new MoveNPC(npc);
 
         // Music
         sound = Gdx.audio.newSound((Gdx.files.internal("07_human_atk_sword_2.mp3")));
+        attackSoundTwo = Gdx.audio.newSound((Gdx.files.internal("06_door_close_1.mp3")));
         music = Gdx.audio.newMusic(Gdx.files.internal("Sketchbook 2024-11-07.ogg"));;
 
         music.setVolume(0.2f);
@@ -152,7 +154,7 @@ public class Main extends ApplicationAdapter {
 
         random = new Random();
         // Create an enemy character
-        for (int e=0; e < random.nextInt(10); e++) {
+        for (int e=0; e < random.nextInt(50); e++) {
             wanderEnemies.add(new WanderEnemy(world, 6, "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Idle.png", random.nextInt(950), random.nextInt(700), playerAgent));
         }
 
@@ -183,9 +185,13 @@ public class Main extends ApplicationAdapter {
             // Draw the stage
             stage.act();
             stage.draw();
-//            return;
+
         } else {
             float deltaTime = Gdx.graphics.getDeltaTime();
+            // Call MovePerson's Move() method to update the character's position
+            movePerson.update(deltaTime);
+            npc.update(deltaTime);
+            enemy.update(deltaTime);
 
 //            // Collision detection: Check for player pickup
 //            Iterator<HealthItem> iterator = healthItems.iterator();
@@ -197,9 +203,34 @@ public class Main extends ApplicationAdapter {
 //                    iterator.remove();   // Remove heart after pickup
 //                }
 //            }
+//
 
-            // Update game elements only when not paused
+// Update game elements only when not paused
             if (!isPaused) {
+
+                // Move_person damage
+                if (enemy.attack) {
+                    float distance = Math.abs(movePerson.GetX() - enemy.GetX());
+                    if (distance < 56) {
+                        if (movePerson.faceLeft && !enemy.faceLeft || !movePerson.faceLeft && enemy.faceLeft) {
+                            movePerson.damage = true;
+                        }
+                    }
+                } else {
+                    movePerson.damage = false;
+                }
+
+                // Simplified if statement for enemy damage
+                if (movePerson.attack) {
+                    float distance = Math.abs(enemy.GetX() - movePerson.GetX());
+                    if (distance < 56) {
+                        if (enemy.faceLeft && !movePerson.faceLeft || !enemy.faceLeft && movePerson.faceLeft) {
+                            enemy.damage = true;
+                        }
+                    }
+                } else {
+                    enemy.damage = false;
+                }
 
                 // Plays sword sound only once per click
                 if (movePerson.isAttacking() && !attackSoundPlayed) {
@@ -208,21 +239,23 @@ public class Main extends ApplicationAdapter {
                 } else if (!movePerson.isAttacking()) {
                     attackSoundPlayed = false; // Reset so sound can play on the next attack
                 }
-                // Call MovePerson's Move() method to update the character's position
-                movePerson.update(deltaTime);
-                npc.update(deltaTime);
-                enemy.update(deltaTime);
+//                if (enemy.attack && !attackSoundPlayed) {
+//                    attackSoundTwo.play(1.0f); // Play sound only once per click
+//                    attackSoundPlayed = true; // Because the soldier has attacked once it won't repeat the sound
+//                } else if (!enemy.attack) {
+//                    attackSoundPlayed = false; // Reset so sound can play on the next attack
+//                }
 
                 for (WanderEnemy e: wanderEnemies) {
                     e.update(deltaTime);
                 }
 //            THIS IS A NO-NO~~~~~~moveNPC.update(deltaTime);~~~~~~~~
 
-                if (movePerson.GetX() <= enemy.GetX() && enemy.attack) {
-                    movePerson.damage = true;
-                } else {
-                    movePerson.damage = false;
-                }
+//                if (movePerson.GetX() <= enemy.GetX() && enemy.attack) {
+//                    movePerson.damage = true;
+//                } else {
+//                    movePerson.damage = false;
+//                }
 
                 // Update spawn timer and spawn hearts periodically
                 spawnTimer += deltaTime;
@@ -230,8 +263,6 @@ public class Main extends ApplicationAdapter {
                     healthItems.add(HeartSpawner.createRandomHeart(heartTexture, Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
                     spawnTimer = 0; // Reset spawn timer
                 }
-//                movePerson.update(deltaTime);
-//                background.update(deltaTime);
 
                 Rectangle soldierRectangle = new Rectangle(soldier.getPosition().x, soldier.getPosition().y, 1, 1);
 
@@ -281,14 +312,6 @@ public class Main extends ApplicationAdapter {
             // Render inventory elements
             inventory.render(deltaTime);
 
-//            batch.begin();
-//            background.render(batch);
-//            soldier.render(batch);
-//            orc.render(batch);
-//            npc.render(batch);
-//            batch.end();
-
-
             world.step(1 / 60f, 6, 2); // Step the physics world
 //            debugRenderer.render(world, batch.getProjectionMatrix());
         }
@@ -307,6 +330,10 @@ public class Main extends ApplicationAdapter {
         music.dispose();
         sound.dispose();
         npc.dispose();
+//        enemy.dispose();
+//        movePerson.dispose();
+//        moveNPC.dispose();
+        inventory.dispose();
 
         for (WanderEnemy e: wanderEnemies   ) {
             e.dispose();
@@ -319,6 +346,7 @@ public class Main extends ApplicationAdapter {
         heartTexture.dispose();
         flagTexture.dispose();
         menuBackgroundImg.dispose();
+
 
     }
 }

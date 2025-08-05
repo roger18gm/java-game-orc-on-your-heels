@@ -3,15 +3,9 @@ import com.badlogic.gdx.ai.steer.Steerable;
 import com.badlogic.gdx.ai.steer.SteeringAcceleration;
 import com.badlogic.gdx.ai.steer.SteeringBehavior;
 import com.badlogic.gdx.ai.steer.behaviors.Arrive;
-import com.badlogic.gdx.ai.steer.behaviors.Seek;
-import com.badlogic.gdx.ai.steer.utils.paths.LinePath;
 import com.badlogic.gdx.ai.utils.Location;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 
 
@@ -22,8 +16,8 @@ public class NPC extends Character implements Steerable<Vector2> {
     protected float linearSpeed;
     protected float linearAcceleration;
 
-    public NPC(World world, String filepath, int x, int y, int frameCols, Character target) {
-        super(world, filepath, x, y, frameCols);
+    public NPC(World world, String filepath, int x, int y, int frameCols, int lifePoints,  Character target) {
+        super(world, filepath, x, y, frameCols, lifePoints);
 
         // Create a steering behavior to follow the target character
         steeringBehavior = new Arrive<>(this, target)
