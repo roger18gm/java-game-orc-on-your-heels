@@ -39,7 +39,12 @@ public class Character implements Location<Vector2> {
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(15, 15); // Adjust size as needed
-//        shape.setAsBox(10, 15); // Adjust size as needed
+//        shape.setAsBox(10, 15); // Adjust size as n
+//        d
+//        asfdsafdsafdsafdsaf
+//
+//        safd
+//        safdeeded
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
