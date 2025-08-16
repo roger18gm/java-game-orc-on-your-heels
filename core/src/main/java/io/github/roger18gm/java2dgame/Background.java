@@ -8,11 +8,7 @@ import com.badlogic.gdx.physics.box2d.*;
 public class Background {
     private final World world;
     private final Texture[] textures;
-    //    private final Texture dirtTileA, dirtTileB, grassTileA, grassTileB, mudTileA, mudTileB, buildingTileA,
-//        stoneTileTopLeft, stoneTileTop, stoneTileTopRight, stoneTileLeft, stoneTileBotLeft, stoneTileBot,
-//        stoneTileBotRight, stoneTileRight, stoneTileCenter, longHedge, shortHedge, log, flag, target;
-    private int tileSize = 46;
-
+  private int tileSize = 46;
     //     Draws each tile on the screen in the form of a grid
     private int[][] tileGrid = { // h 16 X w 22
         {3, 3, 4, 4, 3, 3, 3, 4, 4, 4, 3, 4, 3, 3, 4, 3, 4, 4, 4, 3, 4, 3},
@@ -95,14 +91,9 @@ public class Background {
                 if (propGrid[row][col] == (5)) { // the horizontal logs
                     createStaticBody(col * tileSize - 45, (propGrid.length - 1 - row) * tileSize, tileSize * 2, tileSize);
                 }
-//                if (propGrid[row][col] == (6)) { // the flags
-//                    createStaticBody(col * tileSize, (propGrid.length - 1 - row) * tileSize, tileSize * 2, tileSize * 2);
-//                }
-
                 if (propGrid[row][col] == (7)) { // the vertical logs
                     createStaticBody(col * tileSize, (propGrid.length - 1 - row) * tileSize, tileSize, tileSize * 2);
                 }
-
                 if (propGrid[row][col] == (14)) { // Left side border
                     createStaticBody(col * tileSize - 10, (propGrid.length - 1 - row) * tileSize - 25, tileSize / 3, tileSize * 2);
                 }
@@ -145,11 +136,9 @@ public class Background {
                 int y = (tileGrid.length - 1 - row) * tileSize;
                 if (tileGrid[row][col] != 0) {
                     batch.draw(textures[tileGrid[row][col] - 1], x, y, tileSize, tileSize);
-//                    batch.draw(textures[propGrid[row][col] - 1], x, y, tileSize, tileSize); // this no workie
                 }
             }
         }
-
 
         // Prop map grid rules
         for (int row = 0; row < tileGrid.length; row++){
@@ -185,8 +174,6 @@ public class Background {
                         longHedge.getWidth(), longHedge.getHeight(),
                         false, false);
                 }
-//                else if (propGrid[row][col] == 5) // horizontal logs
-//                    batch.draw(log, x , y - (tileSize / 2) - 20, tileSize * 2, tileSize * 3);
 
                 else if (propGrid[row][col] == 5){ // vertical logs
                     batch.draw(log,

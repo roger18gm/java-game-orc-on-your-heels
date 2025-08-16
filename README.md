@@ -73,6 +73,8 @@ The built JAR can be found at `lwjgl3/build/libs/`.
 - [LibGDX Documentation](https://libgdx.com/dev/)
 - [YouTube Tutorials](https://www.youtube.com)
 
+https://free-game-assets.itch.io/free-battle-location-top-down-2d-tileset?download
+
 ## Future Development
 
 The project aims to expand into a fully-featured game with enhanced combat mechanics, item collection systems, and win conditions.
