@@ -6,6 +6,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Timer;
+
+
+import java.util.Random;
 
 import static io.github.roger18gm.java2dgame.Player.PPM;
 
@@ -24,6 +28,9 @@ public class Enemy {
     private Animation<TextureRegion> currentAnim;
     private float stateTime = 0f;
     private boolean facingLeft = false;
+    private Random random = new Random();
+    private Timer timer = new Timer(); // Timer for patrol direction change
+    private Vector2 patrolDirection = new Vector2(1, 0); // Start moving right
 
     public Enemy(World world, Player player, float x, float y,
                  Texture idleSheet, int idleCols, int idleRows,
@@ -50,8 +57,10 @@ public class Enemy {
         idleAnim   = buildAnimation(idleSheet, idleCols, idleRows, 0.2f);
         walkAnim   = buildAnimation(walkSheet, walkCols, walkRows, 0.1f);
         attackAnim = buildAnimation(attackSheet, attackCols, attackRows, 0.07f);
-
         currentAnim = idleAnim;
+
+        timer.start();
+        startPatrolTimer();
     }
 
     private Animation<TextureRegion> buildAnimation(Texture sheet, int cols, int rows, float frameDuration) {
@@ -111,12 +120,25 @@ public class Enemy {
     }
 
     private void patrol() {
-        // Basic left-right patrol demo
-        Vector2 vel = body.getLinearVelocity();
-        if (Math.abs(vel.x) < 0.01f) {
-            body.setLinearVelocity(speed, 0);
-            facingLeft = false;
-        }
+        body.setLinearVelocity(patrolDirection.x * speed, patrolDirection.y * speed);
+        facingLeft = patrolDirection.x < 0;
+    }
+
+
+    private void startPatrolTimer() {
+        timer.scheduleTask(new Timer.Task() {
+            @Override
+            public void run() {
+                // Randomly pick a new direction
+                int dir = random.nextInt(4);
+                switch (dir) {
+                    case 0: patrolDirection.set(1, 0); break;   // Right
+                    case 1: patrolDirection.set(-1, 0); break;  // Left
+                    case 2: patrolDirection.set(0, 1); break;   // Up
+                    case 3: patrolDirection.set(0, -1); break;  // Down
+                }
+            }
+        }, 0, 2f); // Change direction every 2 seconds
     }
 
     public void draw(SpriteBatch batch) {

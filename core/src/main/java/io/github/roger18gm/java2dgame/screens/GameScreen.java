@@ -61,6 +61,9 @@ public class GameScreen implements Screen {
         enemies.add(new Enemy(world, player, 5, 5, idleSheet, 6, 1, walkSheet, 8, 1, attackSheet, 6, 1));
         enemies.add(new Enemy(world, player, 12, 10, idleSheet, 6, 1, walkSheet, 8, 1, attackSheet, 6, 1));
         enemies.add(new Enemy(world, player, 20, 3, idleSheet, 6, 1, walkSheet, 8, 1, attackSheet, 6, 1));
+
+        // Initialize the inventory system
+        inventory = new Inventory();
     }
 
 
@@ -74,6 +77,7 @@ public class GameScreen implements Screen {
                 return false; // you can add raw game inputs here if needed
             }
         });
+        multiplexer.addProcessor(inventory.getStage());
         Gdx.input.setInputProcessor(multiplexer);
         debugRenderer = new Box2DDebugRenderer();
         map = new TmxMapLoader().load("maps/orcsLvlOneV2.tmx");
@@ -84,9 +88,6 @@ public class GameScreen implements Screen {
         healthItems = new ArrayList<>();
         heartTexture = new Texture("heart pixel art 16x16.png"); // Replace with actual heart texture path
         flagTexture = new Texture("tiles/PNG/Props/Flag_A.png");
-
-        // Initialize the inventory system
-        inventory = new Inventory();
 
         // Spawn some initial hearts
         for (int i = 0; i < 5; i++) {
@@ -167,7 +168,7 @@ public class GameScreen implements Screen {
 
         // --- Draw UI stage ---
         stage.draw();
-
+        inventory.render(delta);
         // Pause example
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             main.setScreen(new MenuScreen(main));
@@ -191,6 +192,7 @@ public class GameScreen implements Screen {
         }
         heartTexture.dispose();
         flagTexture.dispose();
+        inventory.dispose();
     }
 }
 
