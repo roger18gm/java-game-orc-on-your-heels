@@ -1,47 +1,83 @@
-# Java2DGame
+# Orc On Your Heels
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+A 2D top-down action game built with LibGDX where players control a soldier character navigating a tile-based world filled with orc enemies, NPCs, and objectives.
 
-This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
+## Game Overview
 
-## Platforms
+**Core Gameplay:**
+- Control a soldier character using WASD movement and spacebar for attacks
+- Navigate a physics-based world with Box2D collision detection
+- Collect health items that spawn periodically throughout the world 
+- Complete flag capture and delivery objectives
+- Engage in combat with AI-controlled orc enemies
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
+## Technical Architecture
 
-## Gradle
+### Core Technologies
+- **LibGDX Framework**: Cross-platform game development 
+- **Box2D Physics**: 2D physics simulation for movement and collisions
+- **Scene2D UI**: User interface management for menus and inventory
+- **LWJGL3**: Desktop platform deployment 
 
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
+### Key Components
+- **Character System**: Base character class with animation and physics integration 
+- **AI System**: Wandering enemy behavior using steering algorithms
+- **Tile-Based World**: Grid-based background with collision boundaries 
+- **Item System**: Health items and flag objectives with pickup mechanics 
 
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
+## Getting Started
 
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
-<<<<<<< Updated upstream
-=======
+### Prerequisites
+- Java Development Kit (JDK) 8 or higher
+- Gradle build system
 
-## Useful websites
-The majority of our studies came from the documentation directly from the libgdx website. In addition, there were many youtube tutorials online. 
-[LibGDX documentation](https://libgdx.com/dev/)
-[Youtube Tutorials](https://www.youtube.com)
+### Running the Game
+```bash
+# Run the desktop version
+./gradlew lwjgl3:run
+
+# Build executable JAR
+./gradlew lwjgl3:jar
+```
+
+The built JAR can be found at `lwjgl3/build/libs/`.
+
+### Project Structure
+- `core/`: Main game logic shared across platforms
+- `lwjgl3/`: Desktop platform launcher using LWJGL3
+
+## Game Features
+
+### Character Control
+- **Player Character**: Soldier with WASD movement and spacebar attacks
+- **Enemy Characters**: Manual orc control with arrow keys and M for attack 
+- **AI Entities**: Wandering orcs with autonomous movement patterns 
+
+### Audio System
+- Background music with volume control and looping 
+- Combat sound effects for attacks and interactions
+
+### Game Mechanics
+- **Health System**: Collectible heart items that restore player health 
+- **Objective System**: Flag pickup and delivery to designated drop zones
+- **Combat System**: Distance-based damage calculation between characters
+
+## Development
+
+### Useful Gradle Commands
+- `./gradlew build`: Build all projects
+- `./gradlew clean`: Remove build folders 
+- `./gradlew test`: Run unit tests
+
+### Resources
+- [LibGDX Documentation](https://libgdx.com/dev/)
+- [YouTube Tutorials](https://www.youtube.com)
+
+https://free-game-assets.itch.io/free-battle-location-top-down-2d-tileset?download
+
+## Future Development
+
+The project aims to expand into a fully-featured game with enhanced combat mechanics, item collection systems, and win conditions.
 
 ## Future plans
-We plan to continue working on this projects and turn it into a fully functioning game. This includes adding adding aspects of "hurt" and creating the ability to pick up items to win the game. 
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+We plan to continue working on this projects and turn it into a fully functioning game. This includes adding adding aspects of "hurt" and creating the ability to pick up items to win the game.

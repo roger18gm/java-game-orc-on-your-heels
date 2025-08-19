@@ -15,8 +15,8 @@ public class FlagItem extends BaseItem {
 
     // Static factory method to create a FlagItem
     public static FlagItem createFlag(Texture flagTexture) {
-        float x = 525; // Example X coordinate
-        float y = 200; // Example Y coordinate
+        float x = 980; // Example X coordinate
+        float y = 350; // Example Y coordinate
         float width = 60;
         float height = 60;
         return new FlagItem(x, y, width, height, flagTexture);

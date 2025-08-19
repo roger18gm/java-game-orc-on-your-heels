@@ -1,166 +1,161 @@
 package io.github.roger18gm.java2dgame;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 
-public class Enemy implements InputProcessor{
-    private Character character;  // Now accepts a character via constructor
-    private float x, y;
-    private boolean movingLeft = false;
-    private boolean movingRight = false;
-    private boolean movingUp = false;
-    private boolean movingDown = false;
-    public boolean attack = false;
-    private final int SPEED = 60;
-    private static final String WALKING_PATH = "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Walk.png";
-    private static final String IDLE_PATH = "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Idle.png";
-    private static final String ATTACK_PATH = "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Attack02.png";
-    private static final String HURT_PATH = "characters\\Characters(100x100)\\Orc\\Orc\\Orc-Hurt.png";
-    public boolean damage = false; // Damage
-    public MovePerson movePerson;
-    public boolean faceLeft = false;
 
-    public Enemy(Character character) {
-        this.character = character;
-        this.x = character.GetX();
-        this.y = character.GetY();
-//        Gdx.input.setInputProcessor(this);
+import java.util.Random;
+
+import static io.github.roger18gm.java2dgame.Player.PPM;
+
+public class Enemy {
+    enum State { IDLE, PATROL, CHASE, ATTACK }
+    private State state = State.IDLE;
+    private Body body;
+    private Player player;
+    private float speed = 5f;       // movement speed
+    private float detectionRange = 5f; // distance (in Box2D meters)
+    private float attackRange = 1f;    // attack trigger distance
+    // Animations
+    private Animation<TextureRegion> idleAnim;
+    private Animation<TextureRegion> walkAnim;
+    private Animation<TextureRegion> attackAnim;
+    private Animation<TextureRegion> currentAnim;
+    private float stateTime = 0f;
+    private boolean facingLeft = false;
+    private Random random = new Random();
+    private Timer timer = new Timer(); // Timer for patrol direction change
+    private Vector2 patrolDirection = new Vector2(1, 0); // Start moving right
+
+    public Enemy(World world, Player player, float x, float y,
+                 Texture idleSheet, int idleCols, int idleRows,
+                 Texture walkSheet, int walkCols, int walkRows,
+                 Texture attackSheet, int attackCols, int attackRows) {
+        this.player = player;
+
+        // --- Create body ---
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = BodyDef.BodyType.DynamicBody;
+        bodyDef.position.set(x, y);
+        body = world.createBody(bodyDef);
+
+        PolygonShape shape = new PolygonShape();
+        shape.setAsBox(16 / PPM, 16 / PPM);
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = shape;
+        fixtureDef.density = 1f;
+        fixtureDef.friction = 0.3f;
+        body.createFixture(fixtureDef);
+        shape.dispose();
+
+        // --- Animations ---
+        idleAnim   = buildAnimation(idleSheet, idleCols, idleRows, 0.2f);
+        walkAnim   = buildAnimation(walkSheet, walkCols, walkRows, 0.1f);
+        attackAnim = buildAnimation(attackSheet, attackCols, attackRows, 0.07f);
+        currentAnim = idleAnim;
+
+        timer.start();
+        startPatrolTimer();
     }
 
-    public float GetX() {
-        return character.getBody().getPosition().x;
-    }
-    public float GetY() {
-        return character.getBody().getPosition().y;
-    }
+    private Animation<TextureRegion> buildAnimation(Texture sheet, int cols, int rows, float frameDuration) {
+        TextureRegion[][] tmp = TextureRegion.split(sheet,
+            sheet.getWidth() / cols,
+            sheet.getHeight() / rows);
 
-
-    // Called when a key is pressed
-    @Override
-    public boolean keyDown(int keycode) {
-        if (keycode == Input.Keys.LEFT) {
-            movingLeft = true; // Start moving left
-        } else if (keycode == Input.Keys.RIGHT) {
-            movingRight = true; // Start moving right
-        } else if (keycode == Input.Keys.UP) {
-            movingUp = true; // Start moving up
-        } else if (keycode == Input.Keys.DOWN) {
-            movingDown = true; // Start moving down
-        } else if (keycode == Input.Keys.M){
-            attack = true;
-        }
-        return false;
-    }
-
-    // Called when a key is released
-    @Override
-    public boolean keyUp(int keycode) {
-        if (keycode == Input.Keys.LEFT) {
-            movingLeft = false; // Stop moving left
-        } else if (keycode == Input.Keys.RIGHT) {
-            movingRight = false; // Stop moving right
-        } else if (keycode == Input.Keys.UP) {
-            movingUp = false; // Stop moving up
-        } else if (keycode == Input.Keys.DOWN) {
-            movingDown = false; // Stop moving down
-        } else if (keycode == Input.Keys.M){
-            attack = true;
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    attack = false;
-                }
-            }, 0.5f);
-        }
-        return false;
-    }
-
-    // Update class that moves the character in Render in Main
-    public void update(float deltaTime) {
-        // new addition
-        Vector2 velocity = new Vector2(0,0);
-        if (movingLeft) {
-//            character.SetX(character.GetX() - 1); // Move Left
-            velocity.x = -SPEED;
-            character.setFacingLeft(true);           // Set character to face left
-        }
-        if (movingRight) {
-//            character.SetX(character.GetX() + 1); // Move Right
-            velocity.x = SPEED;
-            character.setFacingLeft(false);          // Set character to face right
-        }
-        if (movingUp) {
-//            character.SetY(character.GetY() + 1); // Move Up
-            velocity.y = SPEED;
-        }
-        if (movingDown) {
-//            character.SetY(character.GetY() - 1); // Move Down
-            velocity.y = -SPEED;
-        }
-
-        character.getBody().setLinearVelocity(velocity);
-
-        // If the character is taking damage, the hurt animation will play
-        if (damage) {
-            // Set hurt animation immediately
-            character.SetFilePath(HURT_PATH, 4);
-        } else {
-            // Update the character's movement and animations as normal
-            if (movingDown || movingUp || movingLeft || movingRight) {
-                character.SetFilePath(WALKING_PATH, 8); // Walking animation
-            } else if (attack) {
-                character.SetFilePath(ATTACK_PATH, 6); // Attack animation
-            } else {
-                character.SetFilePath(IDLE_PATH, 6); // Idle animation
+        Array<TextureRegion> frames = new Array<>();
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                frames.add(tmp[r][c]);
             }
         }
+        return new Animation<>(frameDuration, frames, Animation.PlayMode.LOOP);
+    }
 
-        character.update(deltaTime);
+    public void update(float delta) {
+        stateTime += delta;
+
+        Vector2 enemyPos = body.getPosition();
+        Vector2 playerPos = player.getBody().getPosition();
+        float dist = enemyPos.dst(playerPos);
+
+        switch(state) {
+            case IDLE:
+                body.setLinearVelocity(0, 0);
+                currentAnim = idleAnim;
+                if (dist < detectionRange) state = State.CHASE;
+                break;
+
+            case PATROL:
+                patrol();
+                currentAnim = walkAnim;
+                if (dist < detectionRange) state = State.CHASE;
+                break;
+
+            case CHASE:
+                chasePlayer(playerPos);
+                currentAnim = walkAnim;
+                if (dist > detectionRange) state = State.PATROL;
+                if (dist < attackRange) state = State.ATTACK;
+                break;
+
+            case ATTACK:
+                body.setLinearVelocity(0, 0);
+                currentAnim = attackAnim;
+                if (dist > attackRange) state = State.CHASE;
+                break;
+        }
+    }
+
+    private void chasePlayer(Vector2 playerPos) {
+        Vector2 enemyPos = body.getPosition();
+        Vector2 dir = playerPos.cpy().sub(enemyPos).nor();
+        facingLeft = dir.x < 0; // flip if chasing left
+        body.setLinearVelocity(dir.scl(speed));
+    }
+
+    private void patrol() {
+        body.setLinearVelocity(patrolDirection.x * speed, patrolDirection.y * speed);
+        facingLeft = patrolDirection.x < 0;
     }
 
 
-
-
-
-
-
-
-
-    // Ignore these. They are here to avoid errors.
-    @Override
-    public boolean keyTyped(char character) {
-        return false;
+    private void startPatrolTimer() {
+        timer.scheduleTask(new Timer.Task() {
+            @Override
+            public void run() {
+                // Randomly pick a new direction
+                int dir = random.nextInt(4);
+                switch (dir) {
+                    case 0: patrolDirection.set(1, 0); break;   // Right
+                    case 1: patrolDirection.set(-1, 0); break;  // Left
+                    case 2: patrolDirection.set(0, 1); break;   // Up
+                    case 3: patrolDirection.set(0, -1); break;  // Down
+                }
+            }
+        }, 0, 2f); // Change direction every 2 seconds
     }
 
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        return false;
+    public void draw(SpriteBatch batch) {
+        TextureRegion frame = currentAnim.getKeyFrame(stateTime, true);
+
+        if (facingLeft && !frame.isFlipX()) {
+            frame.flip(true, false);
+        } else if (!facingLeft && frame.isFlipX()) {
+            frame.flip(true, false);
+        }
+
+        batch.draw(frame, body.getPosition().x * PPM - frame.getRegionWidth(), body.getPosition().y * PPM - frame.getRegionHeight(), 200,200);
     }
 
-    @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        return false;
-    }
-
-    @Override
-    public boolean mouseMoved(int screenX, int screenY) {
-        return false;
-    }
-
-    @Override
-    public boolean scrolled(float amountX, float amountY) {
-        return false;
+    public Body getBody() {
+        return body;
     }
 }
+
+
